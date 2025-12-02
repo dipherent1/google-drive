@@ -6,7 +6,12 @@ export default {
   schema: "./src/server/db/schema.ts",
   dialect: "singlestore",
   dbCredentials: {
-    url: env.DATABASE_URL,
+    host: env.SINGLESTORE_HOST,
+    port: parseInt(env.SINGLESTORE_POST),
+    user: env.SINGLESTORE_USER,
+    password: env.SINGLESTORE_PASSWORD,
+    database: env.SINGLESTORE_DATABASE,
+    ssl: JSON.parse(env.SINGLESTORE_SSL),
   },
   tablesFilter: ["google-drive_*"],
 } satisfies Config;
