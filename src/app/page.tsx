@@ -3,142 +3,63 @@
 import { useState } from "react";
 import { ChevronRight, File, Folder, Download, UploadIcon } from "lucide-react";
 import { Button } from "~/components/ui/button";
-
-interface FileItem {
-  id: string;
-  name: string;
-  type: "file" | "folder";
-  size?: string;
-  modified: string;
-  url?: string;
-  children?: FileItem[];
-}
-
-const mockData: FileItem[] = [
-  {
-    id: "1",
-    name: "Projects",
-    type: "folder",
-    modified: "Nov 28, 2025",
-    children: [
-      {
-        id: "1-1",
-        name: "Website Redesign",
-        type: "folder",
-        modified: "Nov 25, 2025",
-        children: [
-          {
-            id: "1-1-1",
-            name: "Design Mockups",
-            type: "file",
-            size: "12.5 MB",
-            modified: "Nov 24, 2025",
-            url: "https://example.com/design-mockups.pdf",
-          },
-          {
-            id: "1-1-2",
-            name: "Wireframes",
-            type: "file",
-            size: "3.2 MB",
-            modified: "Nov 23, 2025",
-            url: "https://example.com/wireframes.pdf",
-          },
-        ],
-      },
-      {
-        id: "1-2",
-        name: "Mobile App",
-        type: "folder",
-        modified: "Nov 20, 2025",
-        children: [
-          {
-            id: "1-2-1",
-            name: "App Prototype",
-            type: "file",
-            size: "8.7 MB",
-            modified: "Nov 20, 2025",
-            url: "https://example.com/app-prototype.fig",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "Documents",
-    type: "folder",
-    modified: "Nov 26, 2025",
-    children: [
-      {
-        id: "2-1",
-        name: "Quarterly Report",
-        type: "file",
-        size: "2.1 MB",
-        modified: "Nov 26, 2025",
-        url: "https://example.com/quarterly-report.pdf",
-      },
-      {
-        id: "2-2",
-        name: "Budget Spreadsheet",
-        type: "file",
-        size: "1.3 MB",
-        modified: "Nov 24, 2025",
-        url: "https://example.com/budget.xlsx",
-      },
-    ],
-  },
-  {
-    id: "3",
-    name: "Presentation.pptx",
-    type: "file",
-    size: "5.8 MB",
-    modified: "Nov 27, 2025",
-    url: "https://example.com/presentation.pptx",
-  },
-];
+import { mockFile, mockFolder } from "~/lib/mock-data";
 
 export default function DriveClone() {
   const [currentPath, setCurrentPath] = useState<string[]>([]);
-  const [currentItems, setCurrentItems] = useState<FileItem[]>(mockData);
+  const [currentFolder, setCurrentFolder] = useState<string>("0");
 
-  const getCurrentItems = (): FileItem[] => {
-    let items = mockData;
-    for (const id of currentPath) {
-      const item = items.find((i) => i.id === id);
-      if (item && item.type === "folder" && item.children) {
-        items = item.children;
-      }
-    }
-    return items;
+  const getCurrentFiles = () => {
+    return mockFile.filter((file) => file.parent === currentFolder);
+  };
+
+  const getCurrentSubFolder = () => {
+    return mockFolder.filter((folder) => folder.parent === currentFolder);
   };
 
   const navigateToFolder = (folderId: string) => {
+    // Prevent adding the same folder to the path if already there
+    if (folderId === currentFolder) return;
     setCurrentPath([...currentPath, folderId]);
+    setCurrentFolder(folderId);
   };
 
+  // FIX 1: Implemented the 'goBack' function for breadcrumb navigation
   const goBack = (index: number) => {
-    setCurrentPath(currentPath.slice(0, index));
-  };
+    // If the user clicks the last breadcrumb, do nothing
+    if (index === currentPath.length) return;
 
-  const getBreadcrumbItems = () => {
-    const items = [{ id: "root", name: "My Drive" }];
-    let current = mockData;
-
-    for (const id of currentPath) {
-      const item = current.find((i) => i.id === id);
-      if (item) {
-        items.push({ id: item.id, name: item.name });
-        if (item.children) {
-          current = item.children;
-        }
-      }
+    // Go back to the root
+    if (index === 0) {
+      setCurrentPath([]);
+      setCurrentFolder("0");
+      return;
     }
 
-    return items;
+    // Go back to a specific folder in the path
+    const newPath = currentPath.slice(0, index);
+    setCurrentPath(newPath);
+    setCurrentFolder(newPath[newPath.length - 1] || "0");
   };
 
-  const items = getCurrentItems();
+  // FIX 2: Defined 'breadcrumbs' by calling the 'getBreadcrumbItems' function
+  const getBreadcrumbItems = () => {
+    const folderPath = [{ id: "0", name: "root" }];
+
+    // Create the full path from the mock data
+    for (const id of currentPath) {
+      const folder = mockFolder.find((folder) => folder.id === id);
+      if (folder) {
+        folderPath.push({ id: folder.id, name: folder.name });
+      }
+    }
+    return folderPath;
+  };
+
   const breadcrumbs = getBreadcrumbItems();
+
+  // FIX 3: Defined 'directoryItems' by combining files and folders
+  const directoryItems = [...getCurrentSubFolder(), ...getCurrentFiles()];
 
   return (
     <div className="bg-background min-h-screen">
@@ -187,7 +108,7 @@ export default function DriveClone() {
 
       {/* Main Content */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {items.length === 0 ? (
+        {directoryItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <Folder className="text-muted-foreground mb-4 h-16 w-16" />
             <p className="text-muted-foreground">This folder is empty</p>
@@ -203,7 +124,7 @@ export default function DriveClone() {
             </div>
 
             {/* File/Folder List */}
-            {items.map((item) => (
+            {directoryItems.map((item) => (
               <div
                 key={item.id}
                 className="hover:bg-muted hover:border-border grid grid-cols-12 items-center gap-4 rounded-lg border border-transparent px-4 py-3 transition-colors"
@@ -226,13 +147,15 @@ export default function DriveClone() {
                   </span>
                 </div>
                 <div className="text-muted-foreground md:text-foreground col-span-6 text-sm md:col-span-2">
-                  {item.modified}
+                  {/* Since files don't have a modified date in your data, we show a dash */}
+                  {item.type === "folder" ? item.modified : "—"}
                 </div>
                 <div className="text-muted-foreground md:text-foreground col-span-6 text-sm md:col-span-2">
-                  {item.size || "—"}
+                  {/* Folders don't have a size, so show a dash */}
+                  {item.type === "file" ? item.size : "—"}
                 </div>
                 <div className="col-span-6 flex justify-end md:col-span-2">
-                  {item.type === "file" && item.url ? (
+                  {item.type === "file" && "url" in item ? (
                     <a
                       href={item.url}
                       target="_blank"
@@ -244,9 +167,8 @@ export default function DriveClone() {
                       </Button>
                     </a>
                   ) : (
-                    <span className="text-muted-foreground text-xs">
-                      Folder
-                    </span>
+                    // This space is empty for folders
+                    <span />
                   )}
                 </div>
               </div>
