@@ -8,6 +8,12 @@ export const env = createEnv({
    */
   server: {
     DATABASE_URL: z.string().url(),
+    SINGLESTORE_HOST: z.string(),
+    SINGLESTORE_POST: z.string(),
+    SINGLESTORE_USER: z.string(),
+    SINGLESTORE_PASSWORD: z.string(),
+    SINGLESTORE_DATABASE: z.string(),
+    SINGLESTORE_SSL: z.string(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),

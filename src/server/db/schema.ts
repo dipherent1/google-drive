@@ -1,13 +1,8 @@
-import {
-  int,
-  bigint,
-  text,
-  singlestoreTable,
-} from "drizzle-orm/singlestore-core";
+import { int, text, singlestoreTable } from "drizzle-orm/singlestore-core";
 
 export const users = singlestoreTable("users_table", {
-  id: bigint("id", { mode: "bigint" }).primaryKey().autoincrement(),
-  name: text("name"),
-  email: text("email"),
-  password_hash: text("password_hash"),
+  id: int("id").primaryKey().autoincrement(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
 });
