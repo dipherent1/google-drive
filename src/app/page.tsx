@@ -1,9 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, File, Folder, Download, UploadIcon } from "lucide-react";
+import {
+  ChevronRight,
+  File as fileIcons,
+  Folder as folderIcons,
+  Download,
+  UploadIcon,
+  FileIcon,
+} from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { mockFile, mockFolder } from "~/lib/mock-data";
+import { FileRow, FolderRow } from "./file-row";
 
 export default function DriveClone() {
   const [currentPath, setCurrentPath] = useState<string[]>([]);
@@ -19,6 +27,7 @@ export default function DriveClone() {
 
   const handleFolderClick = (folderId: string) => {
     setCurrentFolder(folderId);
+    console.log(folderId);
   };
 
   const navigateToFolder = (folderId: string) => {
@@ -53,9 +62,15 @@ export default function DriveClone() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500">
-                <File className="h-6 w-6 text-white" />
+                <FileIcon className="h-6 w-6 text-white" />
               </div>
-              <h1 className="text-foreground text-2xl font-semibold">Drive</h1>
+
+              <Button
+                className="text-foreground text-2xl font-semibold"
+                onClick={() => handleFolderClick("0")}
+              >
+                My Drive
+              </Button>
             </div>
             <Button className="gap-2">
               <UploadIcon className="h-4 w-4" />
@@ -74,7 +89,7 @@ export default function DriveClone() {
                 {index > 0 && (
                   <ChevronRight className="text-muted-foreground h-4 w-4" />
                 )}
-                <button
+                {/* <button
                   onClick={() => goBack(index)}
                   className={`hover:bg-muted rounded px-2 py-1 transition-colors ${
                     index === breadcrumbs.length - 1
@@ -83,7 +98,7 @@ export default function DriveClone() {
                   }`}
                 >
                   {item.name}
-                </button>
+                </button> */}
               </div>
             ))}
           </nav>
@@ -102,6 +117,20 @@ export default function DriveClone() {
           </div>
 
           {/* File/Folder List */}
+          <div>
+            <ul>
+              {getCurrentFiles().map((file) => (
+                <FileRow key={file.id} file = {file}/>
+              ))}
+              {getCurrentSubFolder().map((folder) => 
+              (
+                <FolderRow key={folder.id} folder={folder} handleFolderClick={()=>
+                  {
+                    handleFolderClick(folder.id)
+                }}/>
+              ))}
+            </ul>
+          </div>
         </div>
       </main>
     </div>
