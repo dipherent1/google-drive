@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ChevronRight,
   File as fileIcons,
@@ -14,7 +14,6 @@ import { mockFile, mockFolder } from "~/lib/mock-data";
 import { FileRow, FolderRow } from "./file-row";
 
 export default function DriveClone() {
-  const [currentPath, setCurrentPath] = useState<string[]>([]);
   const [currentFolder, setCurrentFolder] = useState<string>("0");
 
   const getCurrentFiles = () => {
@@ -30,28 +29,26 @@ export default function DriveClone() {
     console.log(folderId);
   };
 
-  const navigateToFolder = (folderId: string) => {
-    // Prevent adding the same folder to the path if already there
-    if (folderId === currentFolder) return;
-    setCurrentPath([...currentPath, folderId]);
-    setCurrentFolder(folderId);
-  };
+  
+  const breadcrumbs = useMemo(() => {
+    
+    const breadcrumbs = [];
+    let currentId = currentFolder;
 
-  // FIX 2: Defined 'breadcrumbs' by calling the 'getBreadcrumbItems' function
-  const getBreadcrumbItems = () => {
-    const folderPath = [{ id: "0", name: "My Drive" }];
+    while (currentId !== null){
+      const folder = mockFolder.find((folder) => folder.id === currentId)
+      if (folder){
+        breadcrumbs.unshift(folder);
+        currentId = folder.parent ?? "0";
 
-    // Create the full path from the mock data
-    for (const id of currentPath) {
-      const folder = mockFolder.find((folder) => folder.id === id);
-      if (folder) {
-        folderPath.push({ id: folder.id, name: folder.name });
+      }else {
+        break;
       }
     }
-    return folderPath;
-  };
 
-  const breadcrumbs = getBreadcrumbItems();
+    return breadcrumbs;
+  }, [currentFolder]);
+
 
   // FIX 3: Defined 'directoryItems' by combining files and folders
   return (
@@ -99,6 +96,8 @@ export default function DriveClone() {
                 >
                   {item.name}
                 </button> */}
+
+                
               </div>
             ))}
           </nav>

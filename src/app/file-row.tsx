@@ -19,13 +19,15 @@ export function FileRow(props: { file: File }) {
       key={file.id}
       className="hover:bg-muted hover:border-border grid grid-cols-12 items-center gap-4 rounded-lg border border-transparent px-4 py-3 transition-colors"
     >
-      <div className="text-muted-foreground md:text-foreground col-span-6 text-sm md:col-span-2">
-        {file.name ?? "—"}
-      </div>
+      <span
+        className={`text-sm ${"text-foreground font-medium group-hover:text-blue-500"}`}
+      >
+        {file.name}
+      </span>
       <div className="text-muted-foreground md:text-foreground col-span-6 text-sm md:col-span-2">
         {"modified" in file ? (file.modified as string) : "—"}
       </div>
-      <div className="text-muted-foreground md:text-foregroun2d col-span-6 text-sm md:col-span-2">
+      <div className="text-muted-foreground md:text-foreground col-span-6 text-sm md:col-span-2">
         {file.size ?? "—"}
       </div>
       <div className="col-span-6 flex justify-end md:col-span-2">
