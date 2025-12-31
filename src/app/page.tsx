@@ -1,17 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  ChevronRight,
-  File as fileIcons,
-  Folder as folderIcons,
-  Download,
-  UploadIcon,
-  FileIcon,
-} from "lucide-react";
+import { ChevronRight, Download, FileIcon, UploadIcon } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { mockFile, mockFolder } from "~/lib/mock-data";
-import { FileRow, FolderRow } from "./file-row";
+import { FileRow, FolderRow } from "./file-row"; // Make sure this path is correct
 
 export default function DriveClone() {
   const [currentFolder, setCurrentFolder] = useState<string>("0");
@@ -26,31 +19,27 @@ export default function DriveClone() {
 
   const handleFolderClick = (folderId: string) => {
     setCurrentFolder(folderId);
-    console.log(folderId);
   };
 
-  
   const breadcrumbs = useMemo(() => {
-    
-    const breadcrumbs = [];
-    let currentId = currentFolder;
+    const crumbs = [];
+    let currentId: string | null = currentFolder;
 
-    while (currentId !== null){
-      const folder = mockFolder.find((folder) => folder.id === currentId)
-      if (folder){
-        breadcrumbs.unshift(folder);
-        currentId = folder.parent ?? "0";
-
-      }else {
+    // FIX: Changed the while loop condition to correctly trace back to the root
+    while (currentId) {
+      const folder = mockFolder.find((f) => f.id === currentId);
+      if (folder) {
+        crumbs.unshift(folder);
+        currentId = folder.parent;
+      } else {
+        // Stop if a folder is not found
         break;
       }
     }
 
-    return breadcrumbs;
+    return crumbs;
   }, [currentFolder]);
 
-
-  // FIX 3: Defined 'directoryItems' by combining files and folders
   return (
     <div className="bg-background min-h-screen">
       {/* Header */}
@@ -63,6 +52,7 @@ export default function DriveClone() {
               </div>
 
               <Button
+                variant="ghost" // Using ghost variant for a cleaner look
                 className="text-foreground text-2xl font-semibold"
                 onClick={() => handleFolderClick("0")}
               >
@@ -86,8 +76,8 @@ export default function DriveClone() {
                 {index > 0 && (
                   <ChevronRight className="text-muted-foreground h-4 w-4" />
                 )}
-                {/* <button
-                  onClick={() => goBack(index)}
+                <button
+                  onClick={() => handleFolderClick(item.id)}
                   className={`hover:bg-muted rounded px-2 py-1 transition-colors ${
                     index === breadcrumbs.length - 1
                       ? "text-foreground font-medium"
@@ -95,9 +85,7 @@ export default function DriveClone() {
                   }`}
                 >
                   {item.name}
-                </button> */}
-
-                
+                </button>
               </div>
             ))}
           </nav>
@@ -117,18 +105,17 @@ export default function DriveClone() {
 
           {/* File/Folder List */}
           <div>
-            <ul>
-              {getCurrentFiles().map((file) => (
-                <FileRow key={file.id} file = {file}/>
-              ))}
-              {getCurrentSubFolder().map((folder) => 
-              (
-                <FolderRow key={folder.id} folder={folder} handleFolderClick={()=>
-                  {
-                    handleFolderClick(folder.id)
-                }}/>
-              ))}
-            </ul>
+            {/* The list can be rendered directly, no need for a <ul> */}
+            {getCurrentSubFolder().map((folder) => (
+              <FolderRow
+                key={folder.id}
+                folder={folder}
+                handleFolderClick={() => handleFolderClick(folder.id)}
+              />
+            ))}
+            {getCurrentFiles().map((file) => (
+              <FileRow key={file.id} file={file} />
+            ))}
           </div>
         </div>
       </main>
