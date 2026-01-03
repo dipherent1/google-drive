@@ -24,11 +24,15 @@ export const files = createTable(
   },
 );
 
-export const folder = createTable(
+export const folders = createTable(
   "folder_table", 
   {
   id: bigint("id", { mode: "number", unsigned: true }).primaryKey().autoincrement(),
   name: text("name").notNull(),
   modified: text("modified").notNull(),
   parent: bigint("parent", { mode: "number", unsigned: true }),
-});
+},
+  (t) => {
+    return [index("parent_index").on(t.parent!)];
+  },
+);
